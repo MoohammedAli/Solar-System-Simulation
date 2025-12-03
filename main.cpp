@@ -26,7 +26,7 @@ glm::vec3 camUp    = glm::vec3(0.0f, 1.0f, 0.0f);    // How the camera moves wit
 float lastX = SCR_WIDTH/2.0f, lastY = SCR_HEIGHT/2.0f;  // This to get the position of the mouse on screen (lastX / lastY)
 float yaw = -90.0f, pitch = -12.0f;   // Pitch is used to tilt the camera a little (- is down + is up)
 bool firstMouse = true;
-float fov = 90.0f;   // field of view (Sets how far the use pov is before moving the mouse)
+float fov = 60.0f;   // field of view (Sets how far the use pov is before moving the mouse)
 
 bool orbitLines = true;  //? This toggles the otbit lines (turn off if you want to scale to avoid more calculations ;)
 
@@ -165,7 +165,7 @@ unsigned int loadCubemap(vector<string> faces)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     int width, height, nrChannels;
-    //! Cubemap textures should not be flipped vertically
+    // Cubemap textures should not be flipped vertically
     stbi_set_flip_vertically_on_load(false);
     for(unsigned int i=0;i<faces.size();i++)
     {
@@ -401,6 +401,17 @@ int main() {
         }
     }
 
+    // load moon texture if available, otherwise fall back to a gray placeholder
+    GLuint moonTexture = loadTexture("textures/moon.jpeg");
+    if(moonTexture == 0) {
+        unsigned char moonCol[3] = {200, 200, 200};
+        GLuint t; glGenTextures(1, &t); glBindTexture(GL_TEXTURE_2D, t);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,1,1,0,GL_RGB,GL_UNSIGNED_BYTE,moonCol);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        moonTexture = t;
+    }
+
     // define planets (visual sizes & speeds chosen for demo, not to scale)
     vector<Planet> planets = {
         {"Sun",   6.0f,   0.0f,    0.0f,    25.0f, textures["sun"],    glm::vec3(1.0f,0.9f,0.6f)},
@@ -594,6 +605,43 @@ int main() {
             glUniform1i(glGetUniformLocation(program, "texture1"), 0);
 
             glDrawElements(GL_TRIANGLES, sphere.indexCount, GL_UNSIGNED_INT, 0);
+
+            // Add Moon orbiting Earth (Earth is index 3 in planets vector)
+            if(i == 3) {
+                // Moon parameters (visual)
+                float moonDist = 2.8f; // distance from Earth's center
+                float moonRadius = 0.35f;
+                float moonOrbitPeriod = 3.0f; // seconds per orbit (visual)
+
+                // compute Earth's world position (same math as above)
+                float earthX = 0.0f, earthZ = 0.0f;
+                if(planets[3].distance != 0.0f && planets[3].orbitPeriod != 0.0f) {
+                    float earthOrbitT = simulationTime / planets[3].orbitPeriod;
+                    float earthAngle = earthOrbitT * 2.0f * (float)M_PI;
+                    earthX = planets[3].distance * cos(earthAngle);
+                    earthZ = planets[3].distance * sin(earthAngle);
+                }
+
+                // moon orbit around earth
+                float moonT = simulationTime / moonOrbitPeriod;
+                float moonAngle = moonT * 2.0f * (float)M_PI;
+                float mx = earthX + moonDist * cos(moonAngle);
+                float mz = earthZ + moonDist * sin(moonAngle);
+
+                glm::mat4 moonModel = glm::mat4(1.0f);
+                moonModel = glm::translate(moonModel, glm::vec3(mx, 0.0f, mz));
+                // optional moon self-rotation
+                float moonRot = (simulationTime / 27.3f) * 360.0f;
+                moonModel = glm::rotate(moonModel, glm::radians(moonRot), glm::vec3(0.0f, 1.0f, 0.0f));
+                moonModel = glm::scale(moonModel, glm::vec3(moonRadius));
+
+                glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(moonModel));
+                glUniform1i(uniIsSun, GL_FALSE);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, moonTexture);
+                glUniform1i(glGetUniformLocation(program, "texture1"), 0);
+                glDrawElements(GL_TRIANGLES, sphere.indexCount, GL_UNSIGNED_INT, 0);
+            }
         }
         glBindVertexArray(0);
 
