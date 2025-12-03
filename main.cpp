@@ -1,7 +1,7 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>   // Provides gl functions and pointers
+#include <GLFW/glfw3.h>  // Window and context creation and input handling
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>  //! Libraries starting with glm are math libraries and contain transformations & more
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
@@ -9,27 +9,28 @@
 #include <cmath>
 #include <map>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "stb_image.h"    //! This enables texturing (VERY SIMPLIFIED DEFINITION)
 using namespace std;
 
 
 // ---------- settings ----------
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1380;  // Window width
+const unsigned int SCR_HEIGHT = 720;  // Window height
 
 // ---------- camera ----------
-glm::vec3 camPos   = glm::vec3(0.0f, 30.0f, 80.0f);
-glm::vec3 camFront = glm::vec3(0.0f, -0.3f, -1.0f);
-glm::vec3 camUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 camPos   = glm::vec3(0.0f, 60.0f, 80.0f);  // How the camera is positioned right after opening program
+glm::vec3 camFront = glm::vec3(0.0f, -0.3f, -1.0f);  // Dierction the camera is looking toward(This is normalized vector)
+glm::vec3 camUp    = glm::vec3(0.0f, 1.0f, 0.0f);    // How the camera moves with mouse movement(it moves in Y-AXIS direction)
 
-float lastX = SCR_WIDTH/2.0f, lastY = SCR_HEIGHT/2.0f;
-float yaw = -90.0f, pitch = -12.0f;
+// Mouse Control State
+float lastX = SCR_WIDTH/2.0f, lastY = SCR_HEIGHT/2.0f;  // This to get the position of the mouse on screen (lastX / lastY)
+float yaw = -90.0f, pitch = -12.0f;   // Pitch is used to tilt the camera a little (- is down + is up)
 bool firstMouse = true;
-float fov = 45.0f;
+float fov = 90.0f;   // field of view (Sets how far the use pov is before moving the mouse)
 
-bool orbitLines = true;
+bool orbitLines = true;  //? This toggles the otbit lines (turn off if you want to scale to avoid more calculations ;)
 
-// timing
+// timing (for frame timed movement)
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -49,6 +50,8 @@ GLuint compileShader(GLenum type, const char* src) {
     }
     return id;
 }
+
+//! This makes the shaderprogram by combining both vertexShader and fragmentShader
 GLuint createProgram(const char* vs, const char* fs) {
     GLuint program = glCreateProgram();
     GLuint a = compileShader(GL_VERTEX_SHADER, vs);
@@ -56,7 +59,11 @@ GLuint createProgram(const char* vs, const char* fs) {
     glAttachShader(program, a); glAttachShader(program, b);
     glLinkProgram(program);
     int success; glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if(!success){ char info[1024]; glGetProgramInfoLog(program,1024,nullptr,info); cerr << "Link error: " << info << endl; }
+    if(!success){
+      char info[1024];
+      glGetProgramInfoLog(program, 1024, nullptr, info);
+      cerr << "Link error: " << info << endl;
+    }
     glDeleteShader(a); glDeleteShader(b);
     return program;
 }
@@ -128,7 +135,7 @@ Mesh createSphere(int X_SEGMENTS, int Y_SEGMENTS) {
 GLuint loadTexture(const string &path) {
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     if(!data) {
         cerr << "Failed to load texture: " << path << endl;
         return 0;
@@ -158,7 +165,7 @@ unsigned int loadCubemap(vector<string> faces)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     int width, height, nrChannels;
-    // Cubemap textures should not be flipped vertically
+    //! Cubemap textures should not be flipped vertically
     stbi_set_flip_vertically_on_load(false);
     for(unsigned int i=0;i<faces.size();i++)
     {
