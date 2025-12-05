@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "macOS",
+      "includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/utils",
+        "${workspaceFolder}/utils/**",
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/include/**",
+  "/usr/local/include",
+  "/usr/local/Cellar/glm/1.0.2/include",
+  "/opt/homebrew/include",
+        "/Library/Developer/CommandLineTools/usr/include/c++/v1"
+      ],
+      "defines": [],
+      "macFrameworkPath": [
+        "/System/Library/Frameworks",
+        "/Library/Frameworks"
+      ],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-clang-x64"
+    }
+  ],
+  "version": 4
+}
