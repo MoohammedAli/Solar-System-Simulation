@@ -14,7 +14,7 @@ static GLuint compileShaderInternal(GLenum type, const char* src) {
     if(!success) {
         char info[4096]; glGetShaderInfoLog(id, 4096, nullptr, info);
         // Print shader type and a short preview of the source to help debug
-        const char* typeName = (type==GL_VERTEX_SHADER)?"VERTEX":"FRAGMENT";
+        const char* typeName = (type==GL_VERTEX_SHADER) ? "VERTEX" : "FRAGMENT";
         std::cerr << "Shader compile error (" << typeName << "): " << info << std::endl;
         std::string s(src?src:"(null)");
         std::string preview = s.substr(0, std::min<size_t>(s.size(), 512));

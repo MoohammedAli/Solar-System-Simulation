@@ -9,6 +9,7 @@
 #include "../../shader/shader.h"
 #include "../dust/dust.h"
 #include "../asteroids/asteroids.h"
+#include "../lensflare/lensflare.h"
 #include <memory>
 using namespace std;
 
@@ -20,6 +21,9 @@ struct Planet {
     float rotationPeriod;
     GLuint texture;
     glm::vec3 color;
+    bool hasAtmosphere;
+    glm::vec3 atmosphereColor;
+    float atmosphereIntensity;
 };
 
 struct Moon {
@@ -39,19 +43,26 @@ private:
     void setupOrbits();
     std::unique_ptr<DustSystem> dustSystem;
     std::unique_ptr<AsteroidSystem> asteroidSystem;
-    // Saturn rings
+    std::unique_ptr<Shader> atmosphereShader;
+    std::unique_ptr<LensFlareSystem> lensFlareSystem;
     Mesh saturnRing;
     GLuint saturnRingTexture;
-    // Jupiter moons
     std::vector<Moon> jupiterMoons;
 
 public:
-    // show toggles (can be modified at runtime)
     bool showAsteroids = true;
     bool showDust = true;
     bool showRings = true;
+    bool showAtmospheres = true;
+    bool showLensFlare = true;
+
     Scene();
     void init();
-    void render(Shader &planetShader, const glm::mat4 &view, const glm::mat4 &proj, const glm::vec3 &camPos, const glm::vec3 &camFront, const glm::vec3 &camUp, Mesh &sphere, float simulationTime, float deltaTime);
+    void render(Shader &planetShader, const glm::mat4 &view, const glm::mat4 &proj,
+                const glm::vec3 &camPos, const glm::vec3 &camFront, const glm::vec3 &camUp,
+                Mesh &sphere, float simulationTime, float deltaTime, int screenWidth, int screenHeight);
     void cleanup();
+
+    glm::vec3 getPlanetPosition(int planetIndex, float simulationTime);
+    void renderAtmospheres(const glm::mat4 &view, const glm::mat4 &proj, const glm::vec3 &camPos, Mesh &sphere, float simulationTime);
 };

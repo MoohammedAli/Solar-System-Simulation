@@ -8,9 +8,9 @@
         "${workspaceFolder}/utils/**",
         "${workspaceFolder}/include",
         "${workspaceFolder}/include/**",
-  "/usr/local/include",
-  "/usr/local/Cellar/glm/1.0.2/include",
-  "/opt/homebrew/include",
+        "/usr/local/include",
+        "/usr/local/Cellar/glm/1.0.2/include",
+        "/opt/homebrew/include",
         "/Library/Developer/CommandLineTools/usr/include/c++/v1"
       ],
       "defines": [],
